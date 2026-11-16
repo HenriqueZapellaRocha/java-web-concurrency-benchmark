@@ -1,0 +1,24 @@
+services:
+  reactive-io-test:
+    profiles: [tests]
+    extends:
+      file: ../../apps/reactive/compose.yaml
+      service: integration-test
+    networks:
+      - experiment
+
+  virtual-threads-io-test:
+    profiles: [tests]
+    extends:
+      file: ../../apps/virtual-threads/compose.yaml
+      service: integration-test
+    networks:
+      - experiment
+
+  mvc-io-test:
+    profiles: [tests]
+    extends:
+      file: ../../apps/mvc/compose.yaml
+      service: integration-test
+    networks:
+      - experiment

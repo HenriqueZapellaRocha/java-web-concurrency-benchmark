@@ -1,0 +1,56 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TCC2 CPU workload",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/cpu": {
+      "post": {
+        "operationId": "executeCpu",
+        "summary": "Execute the deterministic PBKDF2 login workload",
+        "responses": {
+          "200": {
+            "description": "Workload completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CpuResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected failure"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CpuResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "iterations",
+          "digest"
+        ],
+        "properties": {
+          "iterations": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1
+          },
+          "digest": {
+            "type": "string",
+            "minLength": 64,
+            "maxLength": 64,
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      }
+    }
+  }
+}
+

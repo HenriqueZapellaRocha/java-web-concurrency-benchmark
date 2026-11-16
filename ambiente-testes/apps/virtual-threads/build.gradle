@@ -1,0 +1,93 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.5.6'
+}
+
+allprojects {
+    group = 'br.pucrs.tcc2'
+    version = '0.1.0-SNAPSHOT'
+
+    repositories {
+        mavenCentral()
+    }
+}
+
+subprojects {
+    apply plugin: 'java-library'
+}
+
+configure(allprojects) {
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
+        options.release = 21
+    }
+
+    tasks.withType(Test).configureEach {
+        useJUnitPlatform()
+        maxParallelForks = 1
+    }
+
+    tasks.withType(AbstractArchiveTask).configureEach {
+        preserveFileTimestamps = false
+        reproducibleFileOrder = true
+    }
+
+    dependencies {
+        implementation platform('org.springframework.boot:spring-boot-dependencies:3.5.6')
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    }
+
+    dependencyLocking {
+        lockAllConfigurations()
+    }
+}
+
+// The root assembles the application; feature code is compiled in library modules.
+dependencies {
+    implementation project(':contract')
+    implementation project(':infrastructure')
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    testImplementation project(':domain')
+    testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    testImplementation 'com.fasterxml.jackson.core:jackson-databind'
+}
+
+bootJar {
+    archiveFileName = 'virtual-threads-app.jar'
+}
+
+jar {
+    enabled = false
+}
+
+tasks.register('verifyEnvironment') {
+    group = 'verification'
+    description = 'Executa os testes dos módulos e da aplicação e gera o jar M2.'
+    dependsOn 'test', 'bootJar', ':contract:test', ':domain:test', ':infrastructure:test'
+}
+
+// Database integration validates the assembled application, outside module unit tests.
+tasks.named('test') {
+    exclude '**/*IntegrationTest.class'
+}
+
+tasks.register('integrationTest', Test) {
+    description = 'Valida /io por HTTP real e PostgreSQL em Docker, incluindo commit e rollback.'
+    group = 'verification'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    include '**/*IntegrationTest.class'
+    shouldRunAfter tasks.named('test')
+    doFirst {
+        if (System.getenv('TCC_IO_INTEGRATION') != 'true') {
+            throw new GradleException('Use ./scripts/test.sh virtual-threads-io para executar a integração em Docker.')
+        }
+    }
+}

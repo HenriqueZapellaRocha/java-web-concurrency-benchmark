@@ -1,0 +1,14 @@
+.git
+.env
+.gradle
+.cache
+.idea
+.vscode
+**/build/classes
+**/build/resources
+**/build/reports
+**/build/test-results
+**/build/tmp
+contract/build
+domain/build
+infrastructure/build

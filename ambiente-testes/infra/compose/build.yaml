@@ -1,0 +1,24 @@
+services:
+  build-m1:
+    profiles: [build]
+    extends:
+      file: ../../apps/mvc/compose.yaml
+      service: build
+    networks:
+      - experiment
+
+  build-m2:
+    profiles: [build]
+    extends:
+      file: ../../apps/virtual-threads/compose.yaml
+      service: build
+    networks:
+      - experiment
+
+  build-m3:
+    profiles: [build]
+    extends:
+      file: ../../apps/reactive/compose.yaml
+      service: build
+    networks:
+      - experiment

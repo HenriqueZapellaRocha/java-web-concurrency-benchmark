@@ -1,0 +1,14 @@
+plugins {
+    id 'java-library'
+    id 'java-test-fixtures'
+}
+
+dependencies {
+    // Mono is part of this module's public ports, so consumers and test fixtures
+    // must inherit the same version constraints as the main compile classpath.
+    api platform('org.springframework.boot:spring-boot-dependencies:3.5.6')
+    api 'io.projectreactor:reactor-core'
+    implementation 'org.springframework:spring-context'
+    implementation 'org.springframework:spring-tx'
+    testImplementation 'io.projectreactor:reactor-test'
+}

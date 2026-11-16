@@ -1,0 +1,15 @@
+name: tcc2
+
+# Único ponto de entrada. Os fragmentos são organizados por responsabilidade.
+include:
+  - compose/database.yaml
+  - compose/models.yaml
+  - compose/tools.yaml
+  - compose/build.yaml
+  - compose/tests.yaml
+
+volumes:
+  postgres-data:
+
+networks:
+  experiment:

@@ -1,0 +1,13 @@
+.git
+.env
+.cache
+.tools
+.idea
+.vscode
+results
+data
+.gradle
+apps
+**/build/classes
+**/build/reports
+**/build/test-results

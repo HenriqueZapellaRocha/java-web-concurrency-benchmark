@@ -1,0 +1,52 @@
+spring:
+  application:
+    name: tcc2-virtual-threads
+  threads:
+    virtual:
+      enabled: true
+  main:
+    web-application-type: servlet
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${POSTGRES_DB:tcc2}
+    username: ${POSTGRES_USER:tcc2}
+    password: ${POSTGRES_PASSWORD:tcc2_local}
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX_SIZE:10}
+      minimum-idle: ${DB_POOL_MAX_SIZE:10}
+      connection-timeout: 15000
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        cache:
+          use_second_level_cache: false
+          use_query_cache: false
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+      accept-float-as-int: false
+server:
+  port: ${SERVER_PORT:8080}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      group:
+        readiness:
+          include: readinessState,db
+          show-components: always
+tcc:
+  model: m2
+  io:
+    database-delay: ${IO_DATABASE_DELAY:0ms}
+  cpu:
+    iterations: ${CPU_ITERATIONS:200000}
+  mixed:
+    cpu-iterations: ${MIXED_CPU_ITERATIONS:10000}

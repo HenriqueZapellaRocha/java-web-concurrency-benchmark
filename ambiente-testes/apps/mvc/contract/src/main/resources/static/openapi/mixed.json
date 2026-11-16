@@ -1,0 +1,25 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "TCC2 Mixed workload", "version": "1.0.0"},
+  "paths": {
+    "/mixed": {
+      "post": {
+        "operationId": "executeMixed",
+        "summary": "Execute SHA-256, then read and record one catalog access",
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "./io.json#/components/schemas/IoRequest"}}}},
+        "responses": {
+          "200": {"description": "CPU work and access completed", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/MixedResponse"}}}},
+          "400": {"description": "Invalid request", "content": {"application/json": {"schema": {"$ref": "./io.json#/components/schemas/ErrorInfo"}}}},
+          "404": {"description": "Item not found", "content": {"application/json": {"schema": {"$ref": "./io.json#/components/schemas/ErrorInfo"}}}},
+          "409": {"description": "Duplicate run/request pair", "content": {"application/json": {"schema": {"$ref": "./io.json#/components/schemas/ErrorInfo"}}}},
+          "500": {"description": "Unexpected failure", "content": {"application/json": {"schema": {"$ref": "./io.json#/components/schemas/ErrorInfo"}}}},
+          "503": {"description": "Database unavailable", "content": {"application/json": {"schema": {"$ref": "./io.json#/components/schemas/ErrorInfo"}}}}
+        }
+      }
+    }
+  },
+  "components": {"schemas": {"MixedResponse": {"type": "object", "required": ["cpu", "io"], "properties": {
+    "cpu": {"$ref": "./cpu.json#/components/schemas/CpuResponse"},
+    "io": {"$ref": "./io.json#/components/schemas/IoResponse"}
+  }}}}
+}

@@ -1,0 +1,78 @@
+name: tcc2-mvc
+
+x-build: &build
+  image: eclipse-temurin:21.0.11_10-jdk-noble@sha256:8a79c84cdf6967ae437eba13c8859d74d41aeccb1e65a42191ca57b1992ad0b8
+  working_dir: /workspace
+  environment:
+    GRADLE_USER_HOME: /workspace/.cache/gradle
+  volumes:
+    - .:/workspace
+  entrypoint: [/bin/bash, docker/gradle.sh]
+  command: [verifyEnvironment]
+
+services:
+  app:
+    image: tcc2-mvc:0.1.0
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: "no"
+    ports:
+      - "127.0.0.1:${APP_PORT:-8080}:8080"
+    cpus: ${APP_CPUS:-2.0}
+    mem_limit: ${APP_MEMORY:-2g}
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      POSTGRES_DB: ${POSTGRES_DB:-tcc2}
+      POSTGRES_USER: ${POSTGRES_USER:-tcc2}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tcc2_local}
+      DB_POOL_MAX_SIZE: ${DB_POOL_MAX_SIZE:-10}
+      IO_DATABASE_DELAY: ${IO_DATABASE_DELAY:-0ms}
+      TOMCAT_MAX_THREADS: ${TOMCAT_MAX_THREADS:-200}
+      TOMCAT_MIN_SPARE_THREADS: ${TOMCAT_MIN_SPARE_THREADS:-10}
+      JAVA_TOOL_OPTIONS: "-Xms${JVM_HEAP:-512m} -Xmx${JVM_HEAP:-512m} -XX:+UseG1GC"
+      CPU_ITERATIONS: ${CPU_ITERATIONS:-200000}
+      MIXED_CPU_ITERATIONS: ${MIXED_CPU_ITERATIONS:-10000}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  build:
+    <<: *build
+    profiles: [build]
+
+  integration-test:
+    <<: *build
+    profiles: [tests]
+    environment:
+      GRADLE_USER_HOME: /workspace/.cache/gradle
+      TCC_IO_INTEGRATION: "true"
+      IO_TEST_DATABASE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-tcc2}
+      IO_TEST_DATABASE_USER: ${POSTGRES_USER:-tcc2}
+      IO_TEST_DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-tcc2_local}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: [integrationTest, --rerun-tasks]
+
+  postgres:
+    image: postgres:16.14@sha256:95206741a5b214807675e14165369d05b93a9cf692223b616d07cca227e74b0b
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-tcc2}
+      POSTGRES_USER: ${POSTGRES_USER:-tcc2}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tcc2_local}
+    cpus: ${POSTGRES_CPUS:-2.0}
+    mem_limit: ${POSTGRES_MEMORY:-2g}
+    command: [postgres, -c, "max_connections=${POSTGRES_MAX_CONNECTIONS:-100}"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 5s
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:

@@ -1,0 +1,31 @@
+# Cada serviço importa apenas a aplicação; o PostgreSQL central é compartilhado.
+services:
+  m1:
+    profiles: [m1]
+    extends:
+      file: ../../apps/mvc/compose.yaml
+      service: app
+    build:
+      target: runtime-prebuilt
+    networks:
+      - experiment
+
+  m2:
+    profiles: [m2]
+    extends:
+      file: ../../apps/virtual-threads/compose.yaml
+      service: app
+    build:
+      target: runtime-prebuilt
+    networks:
+      - experiment
+
+  m3:
+    profiles: [m3]
+    extends:
+      file: ../../apps/reactive/compose.yaml
+      service: app
+    build:
+      target: runtime-prebuilt
+    networks:
+      - experiment

@@ -1,0 +1,43 @@
+services:
+  k6:
+    profiles: [tools]
+    image: grafana/k6:1.8.0@sha256:b992f241070f3f3a7d78096fa6020db1edcda49297ee8ed9eb0ab847ef3dcb32
+    volumes:
+      - ../../tests/k6:/scripts:ro
+      - ../../results/raw:/results
+    environment:
+      RATE: ${K6_CPU_RATE:-10}
+      WARMUP_RATE: ${K6_CPU_WARMUP_RATE:-10}
+      TIME_UNIT: ${K6_CPU_TIME_UNIT:-1s}
+      WARMUP_DURATION: ${K6_CPU_WARMUP_DURATION:-15s}
+      MEASUREMENT_DURATION: ${K6_CPU_MEASUREMENT_DURATION:-30s}
+      PRE_ALLOCATED_VUS: ${K6_CPU_PRE_ALLOCATED_VUS:-10}
+      MAX_VUS: ${K6_CPU_MAX_VUS:-100}
+      REQUEST_TIMEOUT: ${K6_CPU_REQUEST_TIMEOUT:-15s}
+      EXPECTED_ITERATIONS: ${CPU_ITERATIONS:-200000}
+    networks:
+      - experiment
+
+  seed:
+    profiles: [tools]
+    image: tcc2-seed:0.1.0
+    build:
+      context: ../..
+      dockerfile: infra/docker/seed.Dockerfile
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      POSTGRES_DB: ${POSTGRES_DB:-tcc2}
+      POSTGRES_USER: ${POSTGRES_USER:-tcc2}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tcc2_local}
+    cpus: 2.0
+    mem_limit: 1g
+    volumes:
+      - ../../scripts:/workspace/scripts:ro
+      - ../../infra/postgres:/workspace/infra/postgres:ro
+      - ../../tests:/workspace/tests:ro
+      - ../../data/generated:/data
+      - ../../results/raw:/results
+    networks:
+      - experiment
+
